@@ -1,27 +1,32 @@
 package com.example.jetpack_searchable_dropdown
 
-import CustomDropdown
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.jetpack_searchable_dropdown.ui.theme.JetpackSearchableDropdownTheme
 
@@ -32,41 +37,89 @@ class MainActivity : ComponentActivity() {
             JetpackSearchableDropdownTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.error
                 ) {
-                    val items = listOf(
-                        "Robert Johnson",
-                        "Emily Davis",
-                        "Michael Thompson",
-                        "Olivia Martinez",
-                        "William Brown"
-                    )
                     Column(modifier = Modifier.padding(horizontal = 30.dp)) {
-                        Box(
-                            Modifier
-                                .background(
-                                    color = Color.Companion.White,
-                                    shape = RoundedCornerShape(10.dp)
-                                )
-                                .fillMaxWidth()
-                                .height(60.dp)
-                                .padding(horizontal = 30.dp)
-                        ) {
-                            Text(
-                                text = "Select item",
-                                color = Color.Black,
-                                modifier = Modifier.align(
-                                    Alignment.Center
-                                )
-                            )
-                        }
-                        CustomDropdown(items) { selectedItem ->
-                            // Handle item selection
-                        }
+                        SelectYourSkill()
+                        Spacer(modifier = Modifier.height(30.dp))
+                        SelectYourSkill()
                     }
                 }
             }
         }
+    }
+
+    @Composable
+    private fun SelectYourSkill() {
+        var expanded by remember { mutableStateOf(false) }
+        val rotationAngle by animateDpAsState(targetValue = if (expanded) 180.dp else 0.dp)
+
+        Box(
+            Modifier
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 30.dp)
+        ) {
+            Text(
+                text = "Select your skill",
+                color = Color.Black,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(vertical = 16.dp)
+            )
+            Icon(
+                imageVector = Icons.Filled.ArrowDropDown,
+                contentDescription = "Toggle Dropdown",
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .rotate(rotationAngle.value)
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Animated dropdown content
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(
+                animationSpec = tween(durationMillis = 300)
+            ) + fadeIn(
+                initialAlpha = 0.3f,
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = shrinkVertically(
+                animationSpec = tween(durationMillis = 300)
+            ) + fadeOut(
+                animationSpec = tween(durationMillis = 300)
+            )
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .animateContentSize()
+                    .background(Color.White, RoundedCornerShape(10.dp))
+            ) {
+                // Repeat for the number of skills
+                SkillItem("Skill 1")
+                SkillItem("Skill 2")
+                // ... add more items as needed
+            }
+        }
+    }
+
+    @Composable
+    private fun SkillItem(skill: String) {
+        Text(
+            text = skill,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { /* Handle item click */ }
+                .padding(16.dp),
+            color = Color.Black
+        )
     }
 }
 
@@ -78,10 +131,3 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    JetpackSearchableDropdownTheme {
-        Greeting("Android")
-    }
-}
