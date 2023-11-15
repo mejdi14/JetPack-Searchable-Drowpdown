@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
@@ -126,16 +127,19 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun AnimatedIcon(rotationAngle: Dp, expanded: Boolean) {
         val scale = remember { Animatable(1f) }
+        val alpha = remember { Animatable(1f) }
 
         LaunchedEffect(expanded) {
             if (expanded) {
-                // Shrink and then expand
                 scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
                 scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                alpha.animateTo(0.5f, animationSpec = TweenSpec(durationMillis = 500))
+                alpha.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
             } else {
-                // Shrink and then expand
                 scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
                 scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                alpha.animateTo(0.5f, animationSpec = TweenSpec(durationMillis = 500))
+                alpha.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
             }
         }
         Image(
@@ -143,7 +147,8 @@ class MainActivity : ComponentActivity() {
             contentDescription = "Toggle Dropdown",
             modifier = Modifier
                 .scale(scale.value)
-                .rotate(rotationAngle.value)
+                .alpha(alpha.value)
+                .rotate(rotationAngle.value, )
         )
     }
 
