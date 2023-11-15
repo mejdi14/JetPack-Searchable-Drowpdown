@@ -4,16 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.KeyframesSpec
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,8 +37,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.jetpack_searchable_dropdown.ui.theme.JetpackSearchableDropdownTheme
 
@@ -75,28 +86,11 @@ class MainActivity : ComponentActivity() {
                     .align(Alignment.CenterStart)
                     .padding(vertical = 16.dp)
             )
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(
-                    animationSpec = tween(durationMillis = 3000)
-                ) + fadeIn(
-                    initialAlpha = 0.3f,
-                    animationSpec = tween(durationMillis = 3000)
-                ),
-                exit = shrinkVertically(
-                    animationSpec = tween(durationMillis = 3000)
-                ) + fadeOut(
-                    animationSpec = tween(durationMillis = 3000)
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Toggle Dropdown",
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .rotate(rotationAngle.value)
-                )
+
+            Box(modifier = Modifier.align(alignment = Alignment.CenterEnd)) {
+                AnimatedIcon(rotationAngle, expanded)
             }
+
         }
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -127,6 +121,49 @@ class MainActivity : ComponentActivity() {
                 // ... add more items as needed
             }
         }
+    }
+
+    @Composable
+    private fun AnimatedIcon(rotationAngle: Dp, expanded: Boolean) {
+        val scale = remember { Animatable(1f) }
+
+        LaunchedEffect(expanded) {
+            if (expanded) {
+                // Shrink and then expand
+                scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
+                scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+            } else {
+                // Shrink and then expand
+                scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
+                scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+            }
+        }
+        Image(
+            painter = painterResource(id = R.drawable.expand_less),
+            contentDescription = "Toggle Dropdown",
+            modifier = Modifier
+                .scale(scale.value)
+                .rotate(rotationAngle.value)
+        )
+    }
+
+    @OptIn(ExperimentalAnimationApi::class)
+    @Composable
+    fun enterTransition(): EnterTransition {
+        val totalDuration = 2000 // Total duration for both animations
+
+        // Define keyframes for the scale animation
+        val scaleAnimation: KeyframesSpec<Float> = keyframes {
+            durationMillis = totalDuration
+            0f at 0 with LinearOutSlowInEasing // Start with shrink
+            0f at 1000 with LinearOutSlowInEasing // End shrink at 1000ms
+            1f at totalDuration with LinearOutSlowInEasing // Scale up to original size at 2000ms
+        }
+
+        return scaleIn(
+            animationSpec = scaleAnimation,
+            initialScale = 0f
+        )
     }
 
     @Composable
@@ -185,7 +222,9 @@ fun CustomAnimatedVisibility(
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(200.dp).background(Color.Gray)
+        modifier = Modifier
+            .size(200.dp)
+            .background(Color.Gray)
     ) {
         if (visible) {
             Box(
