@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
             Modifier
                 .background(
                     color = Color.White,
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(20.dp)
                 )
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
@@ -99,10 +99,10 @@ class MainActivity : ComponentActivity() {
         AnimatedVisibility(
             visible = expanded,
             enter = expandVertically(
-                animationSpec = tween(durationMillis = 3000)
+                animationSpec = tween(durationMillis = 1000)
             ) + fadeIn(
-                initialAlpha = 0.3f,
-                animationSpec = tween(durationMillis = 3000)
+                initialAlpha = 0.0f,
+                animationSpec = tween(durationMillis = 500)
             ),
             exit = shrinkVertically(
                 animationSpec = tween(durationMillis = 3000)
@@ -114,10 +114,12 @@ class MainActivity : ComponentActivity() {
                 Modifier
                     .fillMaxWidth()
                     .animateContentSize()
-                    .background(Color.White, RoundedCornerShape(10.dp))
+                    .background(Color.White, RoundedCornerShape(20.dp))
             ) {
                 // Repeat for the number of skills
                 SkillItem("Skill 1")
+                SkillItem("Skill 2")
+                SkillItem("Skill 2")
                 SkillItem("Skill 2")
                 // ... add more items as needed
             }
@@ -128,18 +130,23 @@ class MainActivity : ComponentActivity() {
     private fun AnimatedIcon(rotationAngle: Dp, expanded: Boolean) {
         val scale = remember { Animatable(1f) }
         val alpha = remember { Animatable(1f) }
+        val isFirstComposition = remember { mutableStateOf(true) }
 
         LaunchedEffect(expanded) {
-            if (expanded) {
-                scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
-                scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
-                alpha.animateTo(0.5f, animationSpec = TweenSpec(durationMillis = 500))
-                alpha.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+            if (isFirstComposition.value) {
+                isFirstComposition.value = false
             } else {
-                scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
-                scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
-                alpha.animateTo(0.5f, animationSpec = TweenSpec(durationMillis = 500))
-                alpha.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                if (expanded) {
+                    scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
+                    scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                    alpha.animateTo(0.5f, animationSpec = TweenSpec(durationMillis = 500))
+                    alpha.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                } else {
+                    scale.animateTo(0.1f, animationSpec = TweenSpec(durationMillis = 500))
+                    scale.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                    alpha.animateTo(0.5f, animationSpec = TweenSpec(durationMillis = 500))
+                    alpha.animateTo(1f, animationSpec = TweenSpec(durationMillis = 500))
+                }
             }
         }
         Image(
@@ -147,27 +154,8 @@ class MainActivity : ComponentActivity() {
             contentDescription = "Toggle Dropdown",
             modifier = Modifier
                 .scale(scale.value)
-                .alpha(alpha.value)
-                .rotate(rotationAngle.value, )
-        )
-    }
-
-    @OptIn(ExperimentalAnimationApi::class)
-    @Composable
-    fun enterTransition(): EnterTransition {
-        val totalDuration = 2000 // Total duration for both animations
-
-        // Define keyframes for the scale animation
-        val scaleAnimation: KeyframesSpec<Float> = keyframes {
-            durationMillis = totalDuration
-            0f at 0 with LinearOutSlowInEasing // Start with shrink
-            0f at 1000 with LinearOutSlowInEasing // End shrink at 1000ms
-            1f at totalDuration with LinearOutSlowInEasing // Scale up to original size at 2000ms
-        }
-
-        return scaleIn(
-            animationSpec = scaleAnimation,
-            initialScale = 0f
+                .alpha(scale.value)
+                .rotate(rotationAngle.value)
         )
     }
 
@@ -183,66 +171,3 @@ class MainActivity : ComponentActivity() {
         )
     }
 }
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Composable
-fun CustomAnimatedVisibility(
-    visible: Boolean,
-    content: @Composable () -> Unit
-) {
-    // Create an Animatable for scale and alpha, default to the end values of the shrink and fade in
-    val scale = remember { Animatable(0.8f) }
-    val alpha = remember { Animatable(0f) }
-
-    // Handle the enter animation sequence
-    LaunchedEffect(visible) {
-        if (visible) {
-            // Animate from shrink and faded to expanded and visible
-            scale.animateTo(1f, animationSpec = tween(300))
-            alpha.animateTo(1f, animationSpec = tween(300))
-        }
-    }
-
-    // Use the updateTransition API to handle enter and exit together
-    val transition = updateTransition(targetState = visible, label = "visibilityTransition")
-    val animatedScale by transition.animateFloat(
-        transitionSpec = { tween(300) },
-        label = "scaleTransition"
-    ) { state ->
-        if (state) 1f else 0.8f
-    }
-    val animatedAlpha by transition.animateFloat(
-        transitionSpec = { tween(300) },
-        label = "alphaTransition"
-    ) { state ->
-        if (state) 1f else 0f
-    }
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(200.dp)
-            .background(Color.Gray)
-    ) {
-        if (visible) {
-            Box(
-                modifier = Modifier
-                    .graphicsLayer {
-                        scaleX = animatedScale * scale.value
-                        scaleY = animatedScale * scale.value
-                        this.alpha = animatedAlpha * alpha.value
-                    }
-                    .background(MaterialTheme.colorScheme.primary)
-                    .size(100.dp)
-            )
-        }
-    }
-}
-
