@@ -95,7 +95,6 @@ class MainActivity : ComponentActivity() {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Animated dropdown content
         AnimatedVisibility(
             visible = expanded,
             enter = expandVertically(
@@ -116,12 +115,10 @@ class MainActivity : ComponentActivity() {
                     .animateContentSize()
                     .background(Color.White, RoundedCornerShape(20.dp))
             ) {
-                // Repeat for the number of skills
                 SkillItem("Skill 1")
                 SkillItem("Skill 2")
                 SkillItem("Skill 2")
                 SkillItem("Skill 2")
-                // ... add more items as needed
             }
         }
     }
